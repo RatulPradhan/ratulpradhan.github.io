@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<HTML>
+
+<HEAD>
+
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@100;500;700&display=swap" rel="stylesheet">
+
+<TITLE> CS391 Final Project </TITLE>
+
+<!-- on the page style definitions -->
+<STYLE>
+
+	.list{
+		font-family: 'Raleway'; font-size: 20px; font-weight: 200; 
+	}
+
+	body {
+		font-family: 'Raleway'; font-size: 20px; font-weight: 200;
+	}
+
+	.intro{
+
+		font-family: 'Calibri';font-size: 20px; font-weight: 400; text-align: center;
+	}
+
+
+	h1 {
+		font-family: 'Raleway';font-size: 35px; font-weight: 300; text-align: center;
+	    }
+
+	h2{
+		font-family: 'Raleway';font-size: 25px; font-weight: 300;
+		padding-left: 20px; margin-left: 25px;
+
+	}
+
+	ul {
+  
+
+	  list-style-type: none;
+	  margin: 0;
+	  padding: 0 ;
+	  overflow: hidden;
+	  background-color: #90ADA7;
+	}
+
+	li {
+	  float: left;
+	}
+
+	li a {
+	  display: block;
+	  color: white;
+	  text-align: center;
+	  padding: 14px 16px;
+	  text-decoration: none;
+	}
+
+	li a:hover {
+	  background-color: #6A807B;
+	}
+
+	.MainColor{
+		background-color:#C8E3D5 ;
+		font-family: 'Raleway'; font-weight: 300;
+	}
+
+	.barCharts {
+
+	}
+
+	.lineCharts{
+
+	}
+
+	.pieCharts{
+
+	}
+
+	.stackedBarCharts{
+
+	}
+
+
+	.geoMap{
+
+	}
+
+	.introduction{
+
+	}
+
+	.tooltip {
+	  position: absolute;
+	  pointer-event: none;
+	}
+
+	svg .arrowBar rect {
+    fill: #008080;
+	opacity: 0.3;
+	}
+
+	svg .arrowBar text {
+	    text-anchor: middle;
+		font-size: 20;
+		fill: white;
+	}
+
+	.letterButtons{
+		font-family: 'Raleway';
+		font-size: 15px; font-weight: 300;
+		background-color: #C1C9E6;
+		margin:10px;
+		height:40px;
+	}
+
+
+</STYLE>
+
+<!-- src: if exists, code is in the referred file -->
+<SCRIPT type="text/javascript" src="https://d3js.org/d3.v7.min.js">
+</SCRIPT>
+
+<SCRIPT type="text/javascript">
+
+	function highlight(event) {
+    const barz = event.currentTarget;
+    barz.style.fill = "#2C717D";
+	}
+
+	function unhighlight(event) {
+	    const barz = event.currentTarget;
+	    barz.style.fill = "#2C717D";
+	}
+
+</SCRIPT>
+
+</HEAD>
+
+
+<BODY>
+
+	<p style="font-weight: 300; font-size: 35px;text-align: left; 
+	padding: 20px;padding-left: 50px;
+	border-top: solid;  border-left: solid; border-right: solid; border-width: 1px; margin-left: -30px; margin-right:-15px; margin-top:0px; margin-bottom: 15px;"
+	class="MainColor">
+	Analysis of Bestselling Books </p>
+
+
+	<ul class ="list "style="font-weight: 200; font-size: 20px;
+		margin-top: -15px; margin-right:-15px; margin-left: -30px;
+		padding:10px; padding-right: 40px; padding-left: 40px; ">
+		  <li><a href="#introduction">Introduction</a></li>
+		  <li><a href="#histogram">Histogram</a></li>
+		  <li><a href="#lineChart">Line Chart</a></li>
+		  <li><a href="#pieChart">Pie Chart</a></li>
+		  <li><a href="#stackedBarChart">Stacked Bar Chart</a></li>
+		  <li><a href="#geoMap"> Geo Map</a></li>
+
+	</ul>
+
+<SCRIPT type="text/javascript">
+
+	const body = d3.select("body");
+
+	const outerGroup = body.append("g");
+
+	const CHART_W = 1200;
+	const CHART_H = 700;
+	const MARGIN = 70;
+
+	
+
+	let priceMap = {};
+	let avgPriceMap = {};
+	let genreFictionMap = {};
+	let avgGenreFictionMap = {};
+	let avgGenreNonFictionMap = {};
+	let genreNonFictionMap = {};
+	let authorBestsellerMap= {};
+
+	let totalPriceFiction = {};
+	let totalPriceNonFiction = {};
+
+	let allPrice = [];
+
+	let bookName = [];
+	let bookSetting = [];
+
+	let stateSetting = {};
+	
+	let i=0;
+
+	d3.csv("amazon_bestsellers.csv", (row) =>{
+
+
+		// price Map 
+		row.User_Rating = parseFloat(row.User_Ratings);
+		row.Reviews = parseInt(row.Reviews);
+		row.Price = parseInt(row.Price);
+		row.Num_Pages = parseInt(row.Num_Pages);
+
+				
+		if( row.Year in priceMap){
+			let arrayPrice = priceMap[row.Year];
+			arrayPrice.push(row.Price);
+			priceMap[row.Year] = arrayPrice;
+		}
+		else{
+			let arrayPrice = [];
+			arrayPrice.push(row.Price);
+			priceMap[row.Year] = arrayPrice;
+		}
+
+
+		//author Bestseller Map
+		if( row.Author in authorBestsellerMap){
+			let totalCount = authorBestsellerMap[row.Author];
+			authorBestsellerMap[row.Author] = totalCount + 1;
+		}
+		else {
+			authorBestsellerMap[row.Author] = 1;
+		}
+
+
+		//genreFictionMap
+		if(row.Genre == "Fiction"){
+			if( row.Year in genreFictionMap){
+				let arrayPrice = genreFictionMap[row.Year];
+				arrayPrice.push(row.Price);
+				genreFictionMap[row.Year] = arrayPrice;
+
+				totalPriceFiction[row.Year] = totalPriceFiction[row.Year] + row.Price;
+			}
+			else{	
+				let arrayPrice = [];
+				arrayPrice.push(row.Price);
+				genreFictionMap[row.Year] = arrayPrice;
+
+				totalPriceFiction[row.Year] = row.Price;
+			}
+		}
+
+		//genreNonFictionMap
+		if(row.Genre == "Non Fiction"){
+			if( row.Year in genreNonFictionMap){
+				let arrayPrice = genreNonFictionMap[row.Year];
+				arrayPrice.push(row.Price);
+				genreNonFictionMap[row.Year] = arrayPrice;
+
+				totalPriceNonFiction[row.Year] = totalPriceNonFiction[row.Year] + row.Price;
+			}
+			else{	
+				let arrayPrice = [];
+				arrayPrice.push(row.Price);
+				genreNonFictionMap[row.Year] = arrayPrice;
+
+				totalPriceNonFiction[row.Year] = row.Price;
+			}
+		}
+
+		allPrice.push(row.Price);
+		bookName.push(row.Name);
+
+
+		return row;
+	})
+	.then( (bestsellers) => {
+
+
+			Object.entries(genreFictionMap).forEach( (entry) => {
+				avgGenreFictionMap[entry[0]] = d3.mean(entry[1]);
+			});
+
+			Object.entries(priceMap).forEach( (entry) => {
+				avgPriceMap[entry[0]] = d3.mean(entry[1]);
+			});
+
+			Object.entries(genreNonFictionMap).forEach( (entry) => {
+				avgGenreFictionMap[entry[0]] = d3.mean(entry[1]);
+			});
+							
+			Object.entries(priceMap).forEach( (entry) => {
+				avgGenreNonFictionMap[entry[0]] = d3.mean(entry[1]);
+			});
+
+	// console.log (priceMap) ;
+	// console.log (avgPriceMap) ;
+	// console.log (genreFictionMap) ;
+	// console.log (avgGenreFictionMap) ;
+	// console.log (avgGenreNonFictionMap) ;
+	// console.log (genreNonFictionMap) ;
+	// console.log (authorBestsellerMap);
+
+	// console.log (totalPriceFiction) ;
+	// console.log (totalPriceNonFiction) ;
+
+	// console.log (allPrice) ;
+
+	// console.log (bookName) ;
+	// console.log (bookSetting) ;
+
+	// console.log (stateSetting) ;
+
+	// 		console.log(priceMap);
+	// 		console.log(genreFictionMap);
+
+	// 		console.log(avgGenreNonFictionMap);
+
+	// 		console.log(genreNonFictionMap);
+	// 		console.log(avgGenreFictionMap);
+
+	// 		console.log(totalPriceFiction);
+	// 		console.log(totalPriceNonFiction);
+
+			introduction();
+
+			generateHistogram(allPrice);
+
+			generateLineChart(avgGenreFictionMap, avgGenreNonFictionMap);
+
+			generatePieChart(authorBestsellerMap);
+
+			generateStackBarChart(totalPriceFiction, totalPriceNonFiction);
+
+			
+
+			d3.csv("states_abbr.csv").then((abbr) => {
+				randomState(abbr);
+				
+				for (let i=0; i < bookSetting.length ; i++){
+
+					if(bookSetting[i].Setting in stateSetting){
+						stateSetting[bookSetting[i].Setting] = stateSetting[bookSetting[i].Setting] + 1 ;
+					}	
+					else {
+						stateSetting[bookSetting[i].Setting] = 1;
+					}
+			}	
+			console.log(stateSetting);
+				generateGeoMap(stateSetting);	
+				//
+			});
+
+
+	})
+
+
+	function randomState(abbr){
+
+		let min = 0;
+		let max = abbr.length;
+
+		let count = 0;
+
+		for (let i=0; i < bookName.length; i++ ){
+
+			let randomState = (d) => {
+
+				const index =Math.floor(Math.random() * (max - min) + min); //non inclusive maximum since max is 51
+				return abbr[index].abbr;
+			}
+
+			const object = {Name: bookName[i], Setting: randomState()};
+			bookSetting.push(object);
+		}
+
+		return bookSetting;
+	}
+
+
+
+	function randomInt(min, max) {
+		    return Math.floor( Math.random() * (max - min + 1) + min);
+		}
+
+		function randomColor()
+		{
+		  let r = randomInt(50, 200);
+		  let g = randomInt(50, 200);
+		  let b = randomInt(50, 200);
+		 
+		  return `rgb(${r},${g}, ${b})`
+		}
+
+
+
+</SCRIPT>
+
+<SCRIPT type="text/javascript">
+
+	function introduction(){
+
+		body.append("div")
+						.attr("class", "introduction")
+						.attr("id","chartDiv")
+						// .attr("height", CHART_H / 3)
+						// .attr("width", CHART_W );
+ 						.style("border", "1px solid black");
+		
+		const chartDiv = document.getElementById("chartDiv");
+
+		chartDiv.style.width = CHART_W + 200 + "px";
+		chartDiv.style.height = CHART_H / 2 + "px";
+		chartDiv.classList.add("intro");
+
+		chartDiv.innerHTML = "<H1> Introduction </H1>This project aims to visualize the characteristics of the top 50 Bestselling Books between 2009 to 2021 as per Amazon <br> The dataset utilized can be found <a href='https://www.kaggle.com/datasets/wadihsaad/amazon-top-50-bestselling-books-from-2009-to-2021'> here </a> <br>  The revenue from the Book publishing industry has ranged between $25 billion and $26 billion since 2016, and the visualizations below can be used to better understand trends of bestsellers and thereby make decisions <br> To further add to the relevance of this project, the pre-processing methods used to segregate the data was used in my Statistical Methods class (MGT 235) as raw data for statistical analysis <br> <br> <br> Click on above visualizations to jump to them ";
+	}
+	
+	function generateHistogram(allPrice){
+
+
+		const chart = body.append("svg")
+						.attr("class", "barCharts")
+						.attr("id", "histogram") //for href link
+						.attr("height", CHART_H) 
+						.attr("width", CHART_W)
+						.style("border", "1px dotted black");
+
+
+		const xScale = d3.scaleLinear()
+						.domain([0, d3.max(allPrice) + 2])
+						.range([MARGIN , (CHART_W) - MARGIN]);
+
+		const histogram = d3.histogram()
+							.value((d) => d)
+							.domain(xScale.domain())
+							.thresholds(xScale.ticks(70));
+
+		const bins = histogram(allPrice);
+
+
+		const yScale = d3.scaleLinear()
+						.domain([0, d3.max(bins, (d) => d.length)])
+						.range([CHART_H - MARGIN, MARGIN]);
+
+		const heightScale = d3.scaleLinear()
+							.domain([0,d3.max(bins, (d) => d.length) ])
+							.range([0, CHART_H - MARGIN * 2 ]);
+
+		const mainGroup = chart.append("g");
+
+
+		// Chart Titles 
+
+		mainGroup.append("text")
+			   .attr("x", MARGIN * 4)
+			   .attr("y", MARGIN * 2)
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "35px")
+			   .style("font-weight", "300")
+			   .text("Histogram: Price of top 50 Bestselling books 2009-2021");
+
+		mainGroup.append("text")
+			   .attr("x", CHART_W - MARGIN * 10)
+			   .attr("y", (MARGIN * 2) + 50)
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "20px")
+			   .style("font-weight", "300")
+			   .text("On hover: Frequency of each bin");
+
+
+		//x Axis and y Axis marking
+
+		mainGroup.append("text")
+			   .attr("x", CHART_W / 3)
+			   .attr("y", CHART_H - (MARGIN / 3))
+			   .attr("class", "h1")
+			   .attr("text-anchor", "middle")
+			   .style("font-size", "20px")
+			   .style("font-weight", "400")
+			   .text("X Axis : Price of Bestelling Books in $");
+
+		mainGroup.append("text")
+			   .attr("x", MARGIN)
+			   .attr("y", CHART_H)
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "20px")
+			   .attr("transform", `translate(${(CHART_W / 1.8) * -1},${CHART_H / 1.1}) rotate(-90)`)
+			   .style("font-weight", "400")
+			   .text("Y Axis : Frequency of each price range");
+
+		const bars = mainGroup.selectAll(".barCharts")
+						.data(bins)
+						.enter()
+						.append("g")
+						.attr("class", "barCharts")
+						.attr("transform", (d) => { 
+	                       return `translate(${xScale(d.x0)}, ${yScale(d.length)})`;
+	                   });
+
+
+
+
+		bars.append("rect")
+		    .attr("width", (d) => (xScale(d.x1) - xScale(d.x0)))
+		    .attr("height", (d) => (heightScale(d.length)))
+		    .style("fill", "#358896")
+		    .style("stroke", "black")
+			.on("mouseover", (point) => {
+
+					  highlight(point);
+
+                      bars.append("text")
+                           .attr("class", "tooltip")   // so that we can remove it on mouseout
+                           .attr("x", 2)
+                           .attr("y", -10)
+                           .style("fill", "#2C717D")
+                           .text((d)=> {
+
+                           	if(d.length > 0){
+                           	return d.length;
+                           	}
+
+                           	});
+                           
+
+                  })
+                  .on("mouseout", () => {
+                      d3.selectAll(".tooltip").remove();
+                  });
+
+		let xAxis = d3.axisBottom()
+              .scale(xScale)
+              .ticks(53);
+             
+	    chart.append("g")
+	    	 .attr("class", "barCharts")
+	     	 .attr("transform", "translate( " + 0 + ", " + (CHART_H - MARGIN) + " )")
+	     	 .call(xAxis);
+
+	    let yAxis = d3.axisLeft()
+              .scale(yScale)
+              .ticks(55);
+             
+	    chart.append("g")
+	    	 .attr("class", "barCharts")
+	     	 .attr("transform", "translate( " + MARGIN + ", " + 0 + " )")
+	     	 .call(yAxis);
+
+	}
+
+	function generateLineChart(avgGenreFictionMap, avgGenreNonFictionMap){
+
+
+		const arrayFiction = Object.values(avgGenreFictionMap);
+		const arrayNonFiction = Object.values(avgGenreNonFictionMap);
+		const arrayYears = (Object.keys(avgGenreFictionMap));
+
+
+		const chartDiv = body.append("div")
+						.attr("class", "lineCharts")
+						.attr("id", "lineChart");
+						// .attr("height", CHART_H / 3)
+						// .attr("width", CHART_W );
+ 						//.style("border", "1px solid black");
+		
+		const lineChartDiv = document.getElementById("lineChart");
+
+		lineChartDiv.style.width = CHART_W + "px";
+		lineChartDiv.style.height = CHART_H / 8 + "px";
+		lineChartDiv.style.marginBottom = "-50px";
+		lineChartDiv.style.paddingLeft = "0px";
+
+
+		
+		const buttonArea = document.createElement("INPUT");
+				buttonArea.type="button";
+				buttonArea.value="Click for Line Chart";
+				buttonArea.addEventListener("click",lineChart);
+				buttonArea.classList.add("letterButtons");
+				buttonArea.style.display="none";
+
+
+		const buttonLine = document.createElement("INPUT");
+				buttonLine.type="button";
+				buttonLine.value="Click for Area Chart";
+				buttonLine.addEventListener("click",areaChart);
+				buttonLine.classList.add("letterButtons");
+				buttonLine.style.display="none";
+				buttonArea.style.marginBottom = "-100px";
+
+		lineChartDiv.appendChild(buttonArea);
+		lineChartDiv.appendChild(buttonLine);
+
+
+		const chart = body.append("svg")
+						.attr("class", "lineCharts")
+						.attr("id", "lineChart")
+						.attr("height", CHART_H)
+						.attr("width", CHART_W)
+						.style("border", "1px dotted black");
+
+		const mainGroup = chart.append("g");
+
+
+		let chartGroup = mainGroup.append("g")
+							.attr("id", "chartRemoveId")
+								;
+
+
+		const xScale = d3.scaleLinear()
+						.domain([0, arrayFiction.length])
+						.range([MARGIN, CHART_W - MARGIN]);
+
+		const [min,max] = d3.extent(arrayFiction);
+
+		const yScale = d3.scaleLinear()
+						.domain([(min / 1.3), (max + max * 0.1 ) ])
+						.range([CHART_H - MARGIN, MARGIN]);
+
+		const yScaleArea = d3.scaleLinear()
+						.domain([(min), (max) ])
+						.range([CHART_H - MARGIN, MARGIN]);
+
+		const line = d3.line()
+	               .x((d, i)=> {
+	               	return xScale(i);
+	               })
+	               .y((d)=> yScale(d));
+
+		const area = d3.area()
+	               .x((d, i) => xScale(i))
+	               .y0((d) => CHART_H - MARGIN)
+	               .y1((d) => yScale(d));
+
+
+	   	lineChart();
+
+		function areaChart(){
+
+			mainGroup.selectAll("#chartRemoveId").remove();
+
+			let chartGroup = mainGroup.append("g")
+							.attr("id", "chartRemoveId")
+								;
+
+			chartGroup.append("path")
+			 .datum(arrayFiction)
+			 .style("fill", "#963F3C")
+			 .style("opacity", "0.8")
+			 .attr("d", area);
+
+			chartGroup.append("path")
+			 .datum(arrayNonFiction)
+			 .style("fill", "#4C9990")
+			 .style("opacity", "0.8")
+			 .attr("d", area);
+
+
+			 buttonLine.style.display="none";
+			 buttonArea.style.display="block";
+		}
+
+		function lineChart(){
+
+			mainGroup.selectAll("#chartRemoveId").remove();
+
+			let chartGroup = mainGroup.append("g")
+							.attr("id", "chartRemoveId")
+								;
+
+			chartGroup.append("path")
+				 .datum(arrayFiction)
+				 .style("fill", "none")
+				 .style("stroke", "#963F3C")
+				 .style("stroke-width", "3")
+				 .attr("d", line);
+
+				
+			chartGroup.append("path")
+				 .datum(arrayNonFiction)
+				 .style("fill", "none")
+				 .style("stroke-width", "3")
+				 .style("stroke", "#4C9990")
+				 .attr("d", line);
+
+			buttonLine.style.display="block";
+			buttonArea.style.display="none";
+		}
+
+
+
+		const xAxis = d3.axisBottom()
+                .scale(xScale)
+                .ticks(13)
+				.tickFormat((d, i) => arrayYears[i])
+				;
+
+		const yAxis = d3.axisLeft()
+		                .scale(yScale)
+		                .ticks(20);
+
+		chart.append("g")
+			 .attr("transform", `translate(0, ${CHART_H - MARGIN})`)
+			 .call(xAxis);
+
+		chart.append("g")
+		     .attr("transform", `translate(${MARGIN}, 0)`)
+			 .call(yAxis);
+
+		let meanFiction = d3.mean(arrayFiction);
+		let meanNonFiction = d3.mean(arrayNonFiction);
+
+		chart.append("line")
+			 .attr("x1", MARGIN)
+			 .attr("y1", yScale(meanFiction))
+			 .attr("x2", CHART_W - MARGIN)
+			 .attr("y2", yScale(meanFiction))
+			 .style("stroke-dasharray", "1 1")
+			 .style("stroke-width", "5px")
+			 .style("stroke", "maroon");
+
+		chart.append("text")
+			   .attr("x", MARGIN * 2)
+			   .attr("y", (yScale(meanFiction) - 5))
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "20px")
+			   .style("font-weight", "500")
+			   .style("fill", "maroon")
+			   .text(meanFiction.toFixed(2));
+
+		chart.append("line")
+			 .attr("x1", MARGIN)
+			 .attr("y1", yScale(meanNonFiction))
+			 .attr("x2", CHART_W - MARGIN)
+			 .attr("y2", yScale(meanNonFiction))
+			 .style("stroke-dasharray", "1 1")
+			 .style("stroke-width", "5px")
+			 .style("stroke", "green");
+
+		chart.append("text")
+			   .attr("x", MARGIN * 2)
+			   .attr("y", (yScale(meanNonFiction) - 5))
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "20px")
+			   .style("font-weight", "500")
+			   .style("fill", "green")
+			   .text(meanNonFiction.toFixed(2));
+
+		//const hoverGroup = mainGroup.append("g")
+								
+
+		// Chart Titles 
+		mainGroup.append("text")
+			   .attr("x", MARGIN * 4)
+			   .attr("y", MARGIN * 1.5)
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "35px")
+			   .style("font-weight", "300")
+			   .text("Line Chart: Avgerage price of bestsellers by Genre");
+
+		mainGroup.append("text")
+			   .attr("x", CHART_W - MARGIN * 8)
+			   .attr("y", (MARGIN * 2))
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "20px")
+			   .style("font-weight", "300")
+			   .text("Fiction vs Non Fiction");
+
+
+		//x Axis and y Axis marking
+
+		mainGroup.append("text")
+			   .attr("x", CHART_W / 3)
+			   .attr("y", CHART_H - (MARGIN / 3))
+			   .attr("class", "h1")
+			   .attr("text-anchor", "middle")
+			   .style("font-size", "20px")
+			   .style("font-weight", "400")
+			   .text("X Axis : Years");
+
+		mainGroup.append("text")
+			   .attr("x", MARGIN)
+			   .attr("y", CHART_H)
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "20px")
+			   .attr("transform", `translate(${(CHART_W / 1.8) * -1},${CHART_H / 1.1}) rotate(-90)`)
+			   .style("font-weight", "400")
+			   .text("Y Axis : Average Price");
+
+		//color coding
+
+		mainGroup.append("rect")
+				.attr("width", MARGIN)
+				.attr("height", MARGIN / 2)
+				.attr("x", CHART_W - MARGIN * 8)
+			   	.attr("y", (MARGIN * 3))
+			   	.style("fill","#963F3C")
+
+		mainGroup.append("text")
+			   .attr("x", (CHART_W - MARGIN * 8) + 75)
+			   .attr("y", (MARGIN * 3) + 24)
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "20px")
+			   .style("font-weight", "500")
+			   .text("Fiction");
+
+		mainGroup.append("rect")
+				.attr("width", MARGIN)
+				.attr("height", MARGIN / 2)
+				.attr("x", CHART_W - MARGIN * 8)
+			   	.attr("y", (MARGIN * 4))
+			   	.style("fill","#4C9990");
+			   	// .on("mouseover", onHover());
+
+		mainGroup.append("text")
+			   .attr("x", (CHART_W - MARGIN * 8) + 75)
+			   .attr("y", (MARGIN * 4) + 24)
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "20px")
+			   .style("font-weight", "500")
+			   .text("Non Fiction");
+		
+
+
+	}
+
+
+	function generatePieChart(data){
+
+		
+
+		const arrayValues = Object.values(data);
+		const arrayKeys = Object.keys(data);
+		let colourPie = [];
+
+		const arrayOfObjects = [];
+		let arrayPie = [];
+
+		for(let i = 0; i < arrayValues.length; ++i){
+
+			let object = {Count : arrayValues[i], Author: arrayKeys[i] }
+			arrayOfObjects.push(object);
+
+		} 
+
+		arrayOfObjects.sort((a,b) => b.Count - a.Count );
+
+		for(let i = 0; i < arrayOfObjects.length ; ++i){
+
+			arrayPie.push(arrayOfObjects[i].Count);
+
+		}
+
+		
+
+
+		const chart = body.append("svg")
+						.attr("class", "pieCharts")
+						.attr("id", "pieChart")
+						.attr("height", CHART_H)
+						.attr("width", CHART_W)
+						.style("border", "1px dotted black");
+
+
+
+		const rOut = CHART_W / 4.5;
+		const rIn = rOut / 3;
+		const pieData = d3.pie()(arrayPie);
+
+
+		const genArc = d3.arc()
+		                 .padRadius(.05)
+		                 .innerRadius(rIn)
+		                 .outerRadius(rOut);
+
+
+		const explode = (event, d) => { 
+		    let arc = d3.select(event.currentTarget);
+		    let offset = rOut /10;
+		    let angle = (d.startAngle + d.endAngle) / 2;
+		    let dx = offset * Math.sin(angle);
+		    let dy = -offset * Math.cos(angle);
+		 
+		    arc.attr("transform", `translate(${dx}, ${dy})`);
+		}
+
+		const unexplode = (event, d) => {
+		    let arc = d3.select(event.currentTarget);
+		 
+		    arc.attr("transform", `translate(0, 0)`);
+		}
+
+
+		const groups = chart.selectAll("g")
+		                    .data(pieData)
+		                    .enter()
+		                    .append("g")
+		                    .attr("transform", `translate(${CHART_W / 3}, ${CHART_H / 1.8})`);
+
+
+
+		groups.append("path")
+		      .classed("piePiece", true)
+		      .style("fill", (d,i) => {
+
+		      		let colour = randomColor(i);
+		      		colourPie.push(colour)
+		      		return colour;
+
+
+		      	})
+		      .on("mouseover", explode)
+		      .on("mouseout", unexplode)
+		      .attr("d", genArc)
+		      .append("title")
+		      .text((d,i) => `${arrayOfObjects[i].Author}, ${arrayOfObjects[i].Count} Bestseller(s)`);
+		      ;
+		      
+
+		const textGenArc = d3.arc()
+				.innerRadius( rIn * 1)
+				.outerRadius( rOut * 1.7);
+
+		groups.append("text")
+				.attr("fill", "black")
+				.attr("transform", (d) => `translate ( ${textGenArc.centroid(d)})`)
+				.text((d, i) => {
+
+
+					if( (d.endAngle - d.startAngle) > 0.05 ) {
+						return arrayOfObjects[i].Author;
+					}
+				})
+				.style("fill", (d,i) => colourPie[i])
+				.style("text-anchor", "left")
+				.style("font-family", "Calibri");
+
+
+		
+
+		let labelArrays = [];
+
+		for(let i = 0; i < 50; ++i){
+
+			labelArrays.push(arrayOfObjects[i]);
+		}
+
+		const legendW = MARGIN;
+		const legendH = (CHART_H - MARGIN) / labelArrays.length;
+
+		const labelGroup = chart.append("g")
+								.attr("transform", `translate (${CHART_W - MARGIN * 5},${MARGIN / 2})`);
+
+		labelGroup.selectAll("rect")
+				.data(labelArrays)
+				.enter()
+				.append("rect")
+				.attr("width", legendW)
+				.attr("height", legendH)
+				.style("fill", (d, i) => colourPie[i])
+				.attr("transform", (d,i) => {
+					let dx = MARGIN;
+					let dy = i * legendH;
+
+					return `translate (${dx}, ${dy})`;
+				})
+
+		labelGroup.selectAll("text")
+				.data(labelArrays)
+				.enter()
+				.append("text")
+				.style("font-family", "Calibri")
+				.style("font-size", "15px")
+				.style("fill", (d, i) => colourPie[i])
+				.attr("transform", (d,i) => {
+					let dx = MARGIN + legendW;
+					let dy = ((i * legendH) + legendH / 2) + 5;
+
+					return `translate (${dx}, ${dy})`;
+				})
+				.text((d,i)=>{	return d.Author });
+
+		//Title
+
+		chart.append("text")
+			   .attr("x", MARGIN * 0.5)
+			   .attr("y", MARGIN * 1)
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "30px")
+			   .style("font-weight", "300")
+			   .text("Pie Chart: Number of Bestsellers per Author between 2009-2021");
+
+		chart.append("text")
+			   .attr("x", MARGIN * 0.9)
+			   .attr("y", (0))
+			   .attr("transform", `translate(${CHART_W / 3.55}, ${CHART_H / 1.8})`)
+			   .attr("class", "h1")
+			   .attr("text-anchor", "middle")
+			   .style("font-size", "20px")
+			   .style("font-weight", "300")
+			   .text("Hover for details");
+
+
+
+			
+	}
+
+	function generateStackBarChart(totalPriceFiction, totalPriceNonFiction){
+
+		const arrayFiction = Object.values(totalPriceFiction);
+		const arrayYears = Object.keys(totalPriceFiction);
+		const arrayNonFiction = Object.values(totalPriceNonFiction);
+
+
+		
+
+
+		const chart = body.append("svg")
+						.attr("class", "stackedBarCharts")
+						.attr("id", "stackedBarChart")
+						.attr("height", CHART_H)
+						.attr("width", CHART_W)
+						.style("border", "1px dotted black");
+
+		let stackedArray = arrayFiction.map((d, index) => {
+
+			return {Fiction: d, NonFiction: arrayNonFiction[index]};
+
+		})
+
+		const xScale = d3.scaleBand()
+						.domain(d3.range(stackedArray.length))
+						.range([MARGIN, CHART_W - MARGIN]);
+
+		const maxTotalCount = d3.max(stackedArray, (d) => d.Fiction + d.NonFiction);
+
+		const yScale = d3.scaleLinear()
+						.domain([0, maxTotalCount + maxTotalCount * 0.1])
+						.range([CHART_H - MARGIN, MARGIN]);
+
+		const genStack = d3.stack()
+							.keys(Object.keys(stackedArray[0]));
+
+		const stack = genStack(stackedArray);
+
+		let colours = ["#4C9990","#806899"];
+
+		const mainGroup = chart.append("g");
+
+		const groups = mainGroup.selectAll(".stackedBarCharts")
+                    .data(stack)
+                    .enter()
+                    .append("g")
+                    .attr("class", ".stackedBarCharts")
+                    .style("fill", (d, i) => colours[i])
+                    .style("stroke", "black")
+                    .style("stroke-width", "1.5"); 
+
+		groups.selectAll("rect")
+                     .data((series) => series)
+                     .enter()
+                     .append("rect")
+                     .attr("x", (pair, i) => xScale(i)) // *** for domain
+                     .attr("y", (pair) => yScale(pair[1]))
+                     .attr("width", xScale.bandwidth())
+                     .attr("height", (pair) => yScale(pair[0]) - yScale(pair[1]));
+
+
+
+        //another way to do this 
+        
+		// let stackedArray = [];
+
+		// for (let i = 0; i < arrayNonFiction.length ; i++) {
+
+		// 	let object = {Fiction: arrayFiction[i], NonFiction: arrayNonFiction[i]};
+
+		// 	stackedArray.push(object);
+		// }
+
+		//console.log(stackedArray);
+
+
+		const xAxis = d3.axisBottom()
+                .scale(xScale)
+                .tickFormat((d, i) => arrayYears[i])
+				;
+
+		const yAxis = d3.axisLeft()
+		                .scale(yScale)
+		                .ticks(40);
+
+		chart.append("g")
+		    .attr("transform", `translate(0, ${CHART_H - MARGIN})`)
+		    .call(xAxis);
+
+		chart.append("g")
+		    .attr("transform", `translate(${MARGIN}, 0)`)
+		    .call(yAxis);
+
+
+		// Chart Titles 
+		mainGroup.append("text")
+			   .attr("x", MARGIN * 3)
+			   .attr("y", MARGIN)
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "25px")
+			   .style("font-weight", "300")
+			   .text("Stacked Bar Chart: Cumulative Price of Top 50 Bestsellers 2009-2021");
+
+
+		//x Axis and y Axis marking
+
+		mainGroup.append("text")
+			   .attr("x", CHART_W / 3)
+			   .attr("y", CHART_H - (MARGIN / 3))
+			   .attr("class", "h1")
+			   .attr("text-anchor", "middle")
+			   .style("font-size", "20px")
+			   .style("font-weight", "400")
+			   .text("X Axis : Years");
+
+		mainGroup.append("text")
+			   .attr("x", MARGIN)
+			   .attr("y", CHART_H)
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "20px")
+			   .attr("transform", `translate(${(CHART_W / 1.8) * -1},${CHART_H / 1.1}) rotate(-90)`)
+			   .style("font-weight", "400")
+			   .text("Y Axis : Average Price");
+
+
+
+		// color coding
+
+		mainGroup.append("rect")
+				.attr("width", MARGIN)
+				.attr("height", MARGIN / 2)
+				.attr("x",  CHART_W - MARGIN * 8)
+			   	.attr("y", (MARGIN * 1.3))
+			   	.style("fill","#806899")
+			   	.style("stroke", "black")
+			   	.style("stroke-width", "2");
+
+		mainGroup.append("text")
+			   .attr("x", (CHART_W - MARGIN * 8) + 75)
+			   .attr("y", (MARGIN * 1.3) + 24)
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "20px")
+			   .style("font-weight", "500")
+			   .text("Fiction");
+
+		mainGroup.append("rect")
+				.attr("width", MARGIN)
+				.attr("height", MARGIN / 2)
+				.attr("x", CHART_W - MARGIN * 8)
+			   	.attr("y", (MARGIN * 2))
+			   	.style("fill","#4C9990")
+			   	.style("stroke", "black")
+			   	.style("stroke-width", "2");
+
+		mainGroup.append("text")
+			   .attr("x", (CHART_W - MARGIN * 8) + 75)
+			   .attr("y", (MARGIN * 2) + 24)
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "20px")
+			   .style("font-weight", "500")
+			   .text("Non Fiction");
+
+	}
+
+	function generateGeoMap(stateSetting){
+
+
+		const arrayStateSetting = Object.values(stateSetting);
+		const arrayStateAbbr = Object.keys(stateSetting);
+
+		const MIN_R = 5, MAX_R = 30;
+
+
+		const chart = body.append("svg")
+						.attr("class", "geoMap")
+						.attr("id", "geoMap")
+						.attr("height", CHART_H)
+						.attr("width", CHART_W)
+						.style("border", "1px dotted black");
+
+		const CHART_CX = CHART_W / 2;
+		const CHART_CY = CHART_H / 2;
+
+		let coloursNumber = [];
+		let coloursScale = [];
+		let labelColourScale = [];
+
+		const myProj = d3.geoAlbersUsa()
+                 .translate([CHART_CX - MARGIN * 2, CHART_CY])
+                 .scale(CHART_W);
+
+        const genPath = d3.geoPath()
+                  .projection( myProj );
+
+		d3.json("us_states.json")
+		.then ( (mapData) =>{
+
+			for (let i = 0; i < arrayStateAbbr.length; ++i) {
+		        
+		        let abbr = arrayStateAbbr[i];
+		        let setting = arrayStateSetting[i];
+
+		        let state = mapData.features[i].properties;
+		        
+		        state["abbr"] = abbr;
+		        state["setting"] = setting;
+    		}
+		
+
+		let greenScale = d3.scaleLinear()
+                       .domain(d3.extent(arrayStateSetting))
+                       .range([255, 50]);
+
+
+        function getColor(state) {
+
+        	coloursNumber.push(state.properties.setting);
+
+	        let g = greenScale(state.properties.setting);
+
+	        labelColourScale.push(g);
+
+	        coloursScale.push(`rgb(${g * 0.2}, ${g}, ${g * 0.9})`);
+
+	        return `rgb(${g * 0.2}, ${g}, ${g * 0.9})`;
+
+	    	}
+
+	    const mainGroup = chart.append("g");
+
+	    //console.log("color Scale" + getColor(7));
+    	let groups = mainGroup.selectAll(".geoMap")
+                      .data( mapData.features )
+                      .enter()
+                      .append("g")
+                      .attr("class", "geoMap");
+
+	    groups.append("path")
+	          .attr("d", genPath)
+	          .attr("fill", (d) => getColor(d))
+	          .attr("stroke", "black")
+	          .append("title")
+	          .text((d,i) => "Number of Books Set: " + d.properties.setting);
+
+	    groups.append("text")
+	          .text((d) => d.properties.abbr)
+	          .style("text-anchor", "middle")
+	          .style("font-size", 10+"px")
+	          .attr("fill", "lightYellow")
+	          .attr("transform", (d) => {
+	               let center = genPath.centroid(d);
+	               return `translate(${center})`;
+	           });
+
+
+	    const labelGroup = chart.append("g")
+							.attr("transform", `translate(${CHART_W - MARGIN * 3},${MARGIN * 3})`)
+									;
+		// Chart Titles 
+		mainGroup.append("text")
+			   .attr("x", MARGIN * 4)
+			   .attr("y", MARGIN * 1.5)
+			   .attr("class", "h1")
+			   .attr("text-anchor", "left")
+			   .style("font-size", "25px")
+			   .style("font-weight", "300")
+			   .text("Geo Map: States where most bestellers are set (story-wise)");
+
+
+		const legendW = MARGIN;
+		const legendH = (CHART_H - 5 * MARGIN) / coloursScale.length;
+
+		labelColourScale.sort((a,b) => b - a);
+
+		labelGroup.selectAll("rect")
+				.data(labelColourScale)
+				.enter()
+				.append("rect")
+				.attr("width", legendW)
+				.attr("height", legendH)
+				.style("fill", (d, i) => {
+
+					let g = labelColourScale[i];
+	        		return `rgb(${g * 0.2}, ${g}, ${g * 0.9})`;
+				})
+				.attr("transform", (d,i) => {
+					let dx = 0;
+					let dy = i * legendH;
+
+					return `translate (${dx}, ${dy})`;
+				});
+
+
+		labelGroup.append("text")
+			   .attr("y", "30")
+			   .attr("transform", "rotate(90)")
+			   .attr("class", "h1")
+			   .attr("text-anchor", "right")
+			   .style("font-size", "20px")
+			   .style("font-weight", "300")
+			   .text("Low to High | Hover State for Details");
+
+				createArrows();
+
+				addDrag();
+
+				addZoom();
+	});
+
+
+		//for zooming
+	let dx, dy;
+	const HBAR_W = CHART_W;
+	const HBAR_H = CHART_H / 10;
+	const VBAR_W = CHART_W / 15;
+	const VBAR_H = CHART_H;
+
+	const displacement = 20;
+
+	const arrowBars = [];
+
+	const arrows = [
+	    { id:"n", label:"&uarr;", dir:[0,-1], xy:[0,0], dim:[HBAR_W, HBAR_H]},
+	    { id:"s", label:"&darr;", dir:[0,1],  xy:[0,CHART_H - HBAR_H], dim:[HBAR_W, HBAR_H]},
+	    { id:"e", label:"&rarr;", dir:[1,0], xy:[CHART_W - VBAR_W,0], dim:[VBAR_W, VBAR_H]},
+	    { id:"w", label:"&larr;", dir:[-1,0], xy:[0, CHART_H - VBAR_H], dim:[VBAR_W, VBAR_H]} 
+	    ];
+
+	function createArrows() {
+	    arrows.forEach( (arrow, i) => {
+	        arrowBars[i] = chart.append("g")
+	                            .classed("arrowBar", true);
+
+	        arrowBars[i].append("rect")
+	                    .attr("x", arrows[i].xy[0])
+	                    .attr("y", arrows[i].xy[1])
+	                    .attr("width", arrows[i].dim[0])
+	                    .attr("height", arrows[i].dim[1]);
+
+	        arrowBars[i].append("text")
+	                    .attr("x", arrows[i].xy[0] + arrows[i].dim[0]/2)
+	                    .attr("y", arrows[i].xy[1] + arrows[i].dim[1]/2)
+	                    .html(arrows[i].label);
+
+	        arrowBars[i].on("click", (event) => {
+	                        let [dirX, dirY] = arrows[i].dir; 
+
+	                        [dx, dy] = myProj.translate();
+
+	                        dx += (dirX * displacement);
+	                        dy += (dirY * displacement);
+
+	                        myProj.translate([dx, dy]);
+
+	                        updateMap();
+	                     });
+	    });
+	}
+
+		function updateMap() {
+
+		    // update paths d
+		    let groups = chart.selectAll(".geoMap")
+
+		    groups.selectAll("path")
+		          .attr("d", genPath);
+
+		    // update state names (x, y)
+		    groups.selectAll("text")
+		          .attr("transform", (d) => {
+		              let center = genPath.centroid(d);
+		              return `translate(${center})`;
+		           });
+
+		}
+
+		function zooming(event) {
+		    let newScale = event.transform.k * CHART_W;
+
+		    myProj.scale(newScale);
+
+		    updateMap();
+
+		    // Q. how to update city circle radius?
+		}
+
+		function addZoom() {
+		    chart.call( d3.zoom()
+		                  .on("zoom", zooming) );
+		}
+
+		function dragging(event) {
+		    [dx, dy] = myProj.translate();
+
+		    dx += event.dx;
+		    dy += event.dy;
+
+		    myProj.translate([dx, dy]);
+
+		    updateMap();
+		}
+
+		function addDrag() {
+		    chart.call( d3.drag()
+		                  .on("drag", dragging) );
+		}
+
+
+			}
+
+
+</SCRIPT>
+
+</BODY>
+
+</HTML>

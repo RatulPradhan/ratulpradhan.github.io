@@ -1,0 +1,169 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  html {
+    font-family: "Raleway", sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+  
+  :root {
+    --primary-color: #50696f;
+    --light-primary-color: #607f86;
+    --secondary-color: #1b1b1b;
+    --gradient-start: #faebd7 ;
+    --gradient-end: rgb(180, 255, 254);
+  }
+
+  section {
+    padding: 5%;
+  }
+
+  h2 {
+    font-size: 2.5rem;
+    line-height: 100%;
+    padding: 1rem 0rem;
+  }
+  h3 {
+    font-size: 1.25rem;
+    line-height: 125%;
+  }
+
+  .background {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -1;
+    
+  }
+  
+  .blackSaturation{
+    background-color: #1b1b1b;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -1;
+    opacity: 0.2;
+
+  }
+
+  .mainbox{
+    background-color: var(--primary-color);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 75vw;
+    height: 75vh;
+    margin-left: 15%;
+    margin-top: 10%;
+    box-shadow: 0px 2px 12px rgb(0, 0, 0, 0.408);
+    
+    overflow-y: hidden;
+    z-index: 0;
+  }
+  
+  .namebox{
+    background-color: var(--light-primary-color);
+    opacity: 0.8;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 25vw;
+    height: 10vh;
+    margin-left: 40%;
+    margin-top: 6%;
+    z-index: 1;
+    box-shadow: 0px 2px 12px rgba(52, 52, 52, 0.2);
+  }
+
+  .namebox h2{
+    text-align: center;
+    opacity: 0.9;
+    background: linear-gradient(to right, var(--gradient-start ), var(--gradient-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 2px 2px 12px rgba(52, 52, 52, 0.5);
+    color: antiquewhite;
+  }
+
+  .mainbox h3{
+    text-align: center;
+    padding: 3rem 2rem;
+    text-shadow: none;
+    color: #faebd7;
+  }
+
+ 
+
+  .buttons {
+    background-color: rgba(174, 199, 214, 0.2) ;
+    opacity: 0.8;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    box-shadow: 0px 2px 12px rgba(52, 52, 52, 0.2);
+    border: none;
+  }
+
+  .buttons:hover{
+    background-color:  rgba(36, 37, 38, 0.2);
+  }
+
+  .buttons h2{
+    font-family: "Raleway", sans-serif;
+    text-align: center;
+    font-size: 1.2rem;
+    opacity: 0.9;
+    background: linear-gradient(to right,var(--gradient-start ), var(--gradient-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 2px 2px 12px rgba(52, 52, 52, 0.5);
+    color: antiquewhite;
+  }
+
+  .website{
+    width: 15%;
+    height: 10%;
+    margin-left: 17vw;
+    margin-top: 75vh;
+  }
+
+  .dataVis{
+    width: 15%;
+    height: 10%;
+    margin-left: 35vw;
+    margin-top: 70vh;
+  }
+
+  .room{
+    width: 15%;
+    height: 10%;
+    margin-left: 55vw;
+    margin-top: 70vh;
+  }
+
+  .graphics{
+    width: 15%;
+    height: 10%;
+    margin-left: 72vw;
+    margin-top: 75vh;
+  }
+
+  .music{
+    width: 15%;
+    height: 10%;
+    margin-left: 45vw;
+    margin-top: 82vh;
+  }
+
+ 

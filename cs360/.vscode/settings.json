@@ -1,0 +1,43 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "s23_pradra01",
+            "database": "s23_pradra01",
+            "username": "pradra01",
+            "password": "pradra01"
+        },
+        {
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "previewLimit": 50,
+            "server": "cray",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "s23_pradra01",
+            "database": "s23_pradra01",
+            "username": "pradra01",
+            "askForPassword": true
+        },
+        {
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "previewLimit": 50,
+            "server": "cray.cc.gettysburg.edu",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "pradra01",
+            "database": "s23_pradra01",
+            "username": "pradra01",
+            "password": " pradra01"
+        }
+    ]
+}
